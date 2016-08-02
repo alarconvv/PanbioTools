@@ -1,0 +1,38 @@
+createPAEMatrix <- function (Data    = NULL, 
+                             sizeLat  = NULL, 
+                             sizeLong = NULL,
+                             maxLat   = NULL, 
+                             maxLong  = NULL){
+  
+  Data$decimalLongitude <- abs(Data$decimalLongitude)
+  minLat <- min(Data$decimalLatitude) 
+  if (length(maxLat) == 0){
+    maxLat <- max(Data$decimalLatitude)
+  } 
+  minLong <- min(Data$decimalLongitude) 
+  if(length(maxLong) == 0){
+    maxLong <- max(Data$decimalLongitude)
+  } 
+  gridSizeLat <- ceiling((maxLat - minLat) / sizeLat)
+  gridSizeLong <- ceiling((maxLong - minLong) / sizeLong)
+  numberSpecies <- length(levels(Data$species))
+  maxSizeGrid <- gridSizeLat*gridSizeLong
+  GridName <- function(pointToPlaceLat, 
+                        pointToPlaceLong, 
+                        maxLat, 
+                        maxLong, 
+                        sizeLat, 
+                        sizeLong){
+	gridLat <- trunc(((maxLat - pointToPlaceLat) / sizeLat))
+    gridLong <- trunc(((maxLong - pointToPlaceLong) / sizeLong))
+    CuadriculaNombre <- paste("A", gridLat, "-", gridLong, sep="")
+    return(CuadriculaNombre)
+  }
+  Data$gridName <- GridName(pointToPlaceLat = Data$decimalLatitude,
+                            pointToPlaceLong = Data$decimalLongitude,
+                            maxLat, maxLong, 
+                            sizeLat, sizeLong)
+  MatrixdistribData <- table(Data$species, Data$gridName)
+  MatrixdistribData[which(MatrixdistribData > 1 )] <- 1
+  return(as.data.frame.matrix(MatrixdistribData))
+}
