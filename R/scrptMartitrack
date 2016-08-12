@@ -1,0 +1,78 @@
+#'@title title
+#'
+#'@description
+#'
+#'@param sp.list
+#'
+#'@param read.format
+#'
+#'@param path.sp.list
+#'
+#'@param save.data.name
+#'
+#'@param path.save.file
+#'
+#'@param sep.sp
+#'
+#'@param cv
+#'
+#'@param lmin
+#'
+#'@param lmax
+#'
+#'@param maxline
+#'
+#'@param ci 
+#'
+#'@param kml 
+#'
+#'@param croizat
+#'
+#'@param save.script.name
+#'
+#'@param path.save.script
+#'
+#'@details
+#'
+#'@seealso
+#'
+#'@return 
+#'
+#'@author 
+#'
+#'@seealso \code{\link{}}
+#'@seealso \code{\link{}}
+#'
+#'@example
+#
+scrptMartitrack<-function(auto.calculated  = T,
+                                  cv               = 0.25,
+                                  lmin             = 0.5,
+                                  lmax             = 0.75,
+                                  maxline          = 1,
+                                  ci               = 0.8,
+                                  kml              = 'kmlgen',
+                                  croizat          = 'croizat0',
+                                  save.script.name = 'scrpt.marti',
+                                  path.save.script = NULL){
+  if (auto.calculated == T){
+    maxline<-(maxline * 1)
+    lmax<-(maxline * 0.75)
+    lmin<-(maxline * 0.5)
+    cv<-(maxline * 0.25)
+    
+  }
+ 
+  # Escriba el script de ejecucion.
+  outfile <- file(description = paste(path.save.script,save.script.name,sep=''),open = 'w')
+  writeLines(paste('set cv', cv, sep=' '), outfile)
+  writeLines(paste('set lmin', lmin, sep=' '), outfile)
+  writeLines(paste('set lmax', lmax, sep=' '), outfile)
+  writeLines(paste('set maxline', maxline, sep=' '), outfile)
+  writeLines(paste(' set ci',ci, sep=' '), outfile)
+  writeLines(paste(kml, sep=' '), outfile)
+  writeLines(paste(croizat, sep=' '), outfile)
+  close(outfile)
+}
+
+
