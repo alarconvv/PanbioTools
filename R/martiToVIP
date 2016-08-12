@@ -1,0 +1,42 @@
+#'@title title
+#'
+#'@description
+#'
+#'@param data
+#'
+#'@param outfile
+#'
+#'@param openf
+#'
+#'@details This funtion is part of maRtitRacks
+#'
+#'@seealso
+#'
+#'@return 
+#'
+#'@author Miranda-Esquivel Daniel R.
+#'
+#'@seealso \code{\link{}}
+#'@seealso \code{\link{}}
+#'
+#'@example
+
+martiToVIP <-function (data    = NULL, 
+                       long = 3,
+                       lat  = 2,
+                       outfile = "out.xyd"){
+  species <- levels(data$V1)
+  number.species <- length(levels(data$V1))
+  outfile <- file(description = outfile, open = 'w')
+  writeLines(paste("spp", number.species, sep = "  "), outfile)
+  writeLines("nocommas", outfile)
+  writeLines("xydata\n", outfile)
+  for (i in 1:number.species) {
+    writeLines(paste("sp",' ', i-1, ' ',"[", species[i], "]", sep = ""), outfile)
+    distribution <- data[data$V1 == species[i], ]
+    #long,lat para que sirva en vip
+    writeLines(paste( distribution[, 3], distribution[,2],sep = " "), outfile)    
+    writeLines("\n", outfile)
+  }
+  close(outfile)
+}
