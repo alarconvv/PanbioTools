@@ -1,0 +1,68 @@
+#'@title  Escribir archivo de entrada para Software MartiTracks [1]
+#'
+#'@description Escribe un archivo de texto con tres columnas (Specie, 
+#'decimalLatitude,decimalLongitude), separado por espacio y sin encabezado.
+#'
+#'@param data Character. Nombre o Listado de nombres de archivo de las especies.
+#'Si es especificado una lista de especies, no incluya la ruta donde se
+#'encuentran los archivos, especifique esta en el parametro \code{path}.
+#'
+#'@param read.frmt Character. Formato en el que esta escrito el archivo a leer, por defecto
+#' son leidos archivos en formato'.RDS'.Ver detalles.
+#'
+#'@param path Ruta donde se encuentra el archivo de especificado en
+#'\code{data}, si esta ruta fue especificada con el nombre del archivo en 
+#'\code{data}, esta no debe ser especificada de nuevo, por favor omita este
+#'argumento o de lo contrario este podria generar error.
+#'
+#'@param sep.sp Character. Separador entre el genero y el epiteto en un 
+#'Nombre cientifico, si el Separador no es '_' o 'NULL',
+#'este sera remplazado por '_', separador estandar en el formato de entrada para Martitracks.
+#'@param save.name String de caracteres. Nombre de archivo con el que seran
+#' guardados  los datos retornados.
+#'
+#'@param save.file Ruta de destino  donde sera escrito
+#' un archivo de returno. Por defecto son 
+#' guardados en formato '.RDS'.Ver detalles
+#'
+#'@details
+#'Para mas detalles sobre formatos de escritura y/o lectura ver \code{\link{read.and.write}}.
+#'La nomenclatura de las columnas se requiere que sea como es dispuesto en el estandar 
+#'Darwincore2[2]. Ver data(ID_Darwin_Core)
+#'
+#'@return Un objeto clase Data.frame.
+#'@author R-Alarcon Vivivana
+#'
+#'@note See:
+#'R-Alarcon V, Miranda-Esquivel DR.(2015) geocleaMT: A new R package to cleaning 
+#'geographical data from electronical biodatabases.Ecography
+#'
+#'
+#'@seealso \code{\link{read.and.write}}
+#'@references
+#'[1] MartiTracks
+#'[2] Darwincore"
+#'
+
+#
+writeMartitrack<-function(data          = NULL,
+                           read.frmt      = 'readRDS',
+                           path     = NULL,
+                           sep.sp           = '_',
+                           save.name   = 'martitrack.dat',
+                           save.marti   = NULL){
+  # lea archivo
+  sp.tab<-readAndWrite(action = 'read', frmt = read.frmt,
+                         path = path, name = data)
+  # si el separador del nombre de la especie no es '_' o no es null,
+  # busque el separador y reemplacelo por '_'.
+  if (!sep.sp == '_' | !is.null(sep.sp)) {
+    sp.tab$species <- gsub(sep.sp, '_', sp.tab$species)
+  }
+  # Escriba el archivo de datos para MArtitrack
+  marti.tab <- sp.tab[,c('species', 'decimalLatitude', 'decimalLongitude')]
+  write.table(marti.tab, paste(save.marti, save.name, sep=''),
+              quote = F, sep = ' ', row.names = F, col.names = F)
+}
+
+
