@@ -1,0 +1,70 @@
+#
+# writes a ndm save
+# 2015 04 17
+#
+# DRME dmiranda@uis.edu.co
+#
+
+
+#
+# Usage 
+# write.NDM.Matrix (data, output,
+#                   sizeLat,sizeLong,
+#                   originLat,originLong)
+#
+# Where data is a data.frame object with the distribution
+# and output is the save to write
+#
+
+xydTODataMatrix <- function (distributionalData = NULL,
+                             save               = "ndm.dat",
+                             sizeLat            = NULL,
+                             sizeLong           = NULL,
+                             originLat          = NULL,
+                             originLong         = NULL){
+  maxLat <- originLat
+  maxLong <- abs(originLong)
+  distributionalData$decimalLongitude <- abs(distributionalData$decimalLongitude)
+  minLat <- min(distributionalData$decimalLatitude) 
+  if (length(maxLat) == 0){
+    maxLat <- max(distributionalData$decimalLatitude)
+  }
+  minLong <- min(distributionalData$decimalLongitude) 
+  if(length(maxLong) == 0){
+    maxLong <- max(distributionalData$decimalLongitude)
+  }
+  gridSizeLat <- (ceiling ((maxLat - minLat) / sizeLat))+1
+  gridSizeLong <- (ceiling ((maxLong - minLong) / sizeLong))+1
+  numberSpecies <- length(levels(distributionalData$species))
+  maxSizeGrid <- gridSizeLat*gridSizeLong
+  data <- createPAEMatrix(distributionalData,
+                          sizeLat, sizeLong,
+                          maxLat, maxLong)
+  data <- t(data)
+  NDMTerminalsNames <- rownames(data)
+  NDMTerminalsNumber <- length(NDMTerminalsNames)
+  nchars <- length(colnames(data))
+  if (originLong  > 0) {
+    originLong <- (originLong * (-1))
+    }
+  cat(paste("gridx", originLong, sizeLong), save = save, append = F)
+  cat("\n", save =save, append = T)
+  cat(paste("gridy", originLat, sizeLat), save = save, append = T)
+  cat("\n", save = save, append = T)
+  cat(paste("rows", gridSizeLat), save = save, append = T)
+  cat("\n", save = save, append = T)
+  cat(paste("cols", gridSizeLong), save = save, append = T)
+  cat("\n", save =save,append = T)
+  cat(paste("spp", numberSpecies), save = save, append = T)
+  cat("\n", save = save, append = T)
+  cat("data", save = save, append = T)
+  cat("\n", save = save, append = T)
+  for(i in 1:NDMTerminalsNumber){
+    cat(NDMTerminalsNames[i], save = save, append = T)
+    cat("\n", save = save, append = T)
+    cat(paste(as.character(data[i, ]), sep = ""), save = save, append = T)
+    cat("\n", save = save, append = T)
+    }
+  cat(";",save = save, append = T)
+  cat("\n", save = save, append = T)
+  }
