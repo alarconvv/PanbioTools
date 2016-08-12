@@ -1,0 +1,107 @@
+#require(maptools)
+divTOshp <- function(div     = NULL,
+                     outfile = NULL ) {
+  # Lea como tabla poligonos .div exportados des de VNDM
+  div.file <- as.data.frame (read.table (div, header = F, sep=" ", fill=T,
+                                              colClasses = "character"))
+  #Busque las finalizaciones de cada poligono
+  search.file <- grep("END", div.file$V1)
+  div.file <- div.file[-search.file, ]
+  # desde 1 hasta el numeori de filas, cada x numero de coordenadas que conforman
+  #una ind.poly
+  poly.sequen <- seq( 1, nrow(div.file), as.numeric(search.file[1]) - 1)
+  # Para quitar el identificador de poligono que esta en la primera fila, coloque
+  # corra a la primera fila la segunda y a la segunda la tercera
+  for (i in poly.sequen) {
+    div.file[i, 1] <- div.file[i, 2]
+    div.file[i, 2] <- div.file[i, 3]
+  }
+  # concadtene solo las dos primeras filas que corresponden a las coiordenadas
+  #de los poligonos
+  long.lat.file <- div.file[, c(1, 2)]
+  long.lat.file$V1 <- as.numeric(long.lat.file$V1)
+  long.lat.file$V2 <- as.numeric(long.lat.file$V2)
+  #inicio de poligono
+  seq1 <- seq(1, nrow(long.lat.file), as.numeric(search.file[1]) - 1)
+  #final de poligono
+  seq2 <- seq(as.numeric(search.file[1]) - 1,nrow(long.lat.file),
+              as.numeric(search.file[1]) -1 )
+  #una el inicio con el final
+  seqs <- cbind(seq1, seq2)
+ #Numero de pologinos
+  seq3 <- seq(1, length(seq1))
+ # para cada poligono, haga un shp con cada poligono.
+c<-1
+  for (c in seq3){
+    ind.poly <- long.lat.file[c(seqs[c, 1]:seqs[c, 2]), ]
+    colnames(ind.poly) <- c("x", "y")
+    txt.to.poly <- Polygon(ind.poly)
+    ID <- paste("ID", c, sep = "-")
+    ID.poly <- Polygons(list(txt.to.poly), ID = ID)
+    poly.to.class.SP <- SpatialPolygons(list(ID.poly))
+    df <- data.frame(value = c, row.names=ID)
+    SP.df <- SpatialPolygonsDataFrame(poly.to.class.SP, df)
+    proj4string(SP.df) <- "+proj=longlat +datum=WGS84"
+    writePolyShape(SP.df, paste(c, "polytemp", sep="-") )
+  }
+  shps <- list.files(pattern = "*polytemp.shp")
+  poly0 <- NA
+ #para cada shp una en un solo shp
+  for (s in shps) {
+    #cargue el  poligono
+    tem1<- readShapePoly(s)
+    poly1 <-  Polygons(tem1@polygons[[1]]@Polygons, ID = tem1@data$SP_ID)
+    if (is.na(poly0)){
+      #cargue el primer poligono
+      poly.list <- poly1
+      data1 <- tem1
+      poly0 <- 1 
+      }else{
+        # este parte se hace para todos los poligono porque poly0 no es 1
+        #sino cargue el segundo poligono
+        # la info del segundo poligono asignela a poly2
+        poly2 <- poly1
+        #asigne el primer poligono a poly1
+        poly1 <- poly.list
+        # una el primer poligono con el segundo y asigneloa una lista
+        poly.list <- as.list(c(poly1, poly2))
+        # si poly es igual a 1, entonces es porque ya tiene la primera lista de 
+        #poligonos (1 y 2)
+        if (poly0==1){
+          # este parte se hace para solo para e?? segundo loop porque poly0 no es 1
+        #asigne el segundo poligono a temp2
+        tem2 <- tem1
+        #asigne el primer poligono a temp1
+        tem1 <- data1
+        #ahora data1 sera la informacion de la lista de poligonos
+        data1 <- rbind(tem1@data, tem2@data)
+        #asine poly0 2 para que este paso no se repita
+        poly0 <- 2
+        }else{
+          # este parte se hace para todos los poligono porque poly0 no es 1
+          # si poly0 es diferente de 1 o 2
+          # temp2 sera el siguiente poligono diferente alos poligonos
+          #primero y al segundo
+          tem2<-tem1
+          #temp1 sera lalista de poligonos, en la tercera ronda corresponde a la
+          #lista del primero y el segundo poligono
+          tem1<-data1
+          # este sera la lista de los poligonos juntos, en el tercer loop sera 
+          # poligono 1, 2 y 3
+          data1<-rbind(tem1, tem2@data)
+        }
+      }
+  }
+ # cuando termine de unir en una lista todos los poligonos,pase a clase
+ #SpatialPolygons 
+  total.polys <- SpatialPolygons(poly.list)
+ # una la informacion de cada poligono
+  rownames(data1) <- data1$SP_ID
+ # pase a clase SpatialPolygonsDataFrame
+  SP.df <- SpatialPolygonsDataFrame(total.polys, data1)
+  #delete <- "rm *temp*"
+ # borre todos los archivos
+  unlink("*polytemp*", recursive = FALSE, force = FALSE)
+ # system(delete)
+  writePolyShape(SP.df, outfile)
+}
