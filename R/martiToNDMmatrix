@@ -16,7 +16,7 @@
 # and output is the save to write
 #
 
-xydTODataMatrix <- function (distributionalData = NULL,
+martiToNDMmatrix <- function (distributionalData = NULL,
                              save               = "ndm.dat",
                              sizeLat            = NULL,
                              sizeLong           = NULL,
