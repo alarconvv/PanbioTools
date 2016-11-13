@@ -110,7 +110,8 @@ acfTOshp <- function(file.GM      = NULL,
       table$decimalLongitude[j] <- as.numeric(as.character(GMapper[points[j] + 3, ]))
       table$decimalLatitude[j] <- as.numeric(as.character(GMapper[points[j] + 4, ])) * (-1)
     }
-  }
-  readAndWrite(action = 'write', frmt = 'saveTXT', path = NULL, 
+    readAndWrite(action = 'write', frmt = 'saveTXT', path = NULL, 
                name = paste('EndemicSpecies', name.SHP, '.txt', sep='-'), object = table)
+  
   }
+}
